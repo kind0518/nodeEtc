@@ -1,0 +1,101 @@
+var express = require('express');
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
+var bodyParser = require('body-parser');
+var GPIO = require('onoff').Gpio;
+var led = new GPIO(18, 'out');
+var logger = require('morgan');
+var sensorLib = require("node-dht-sensor");
+//온습도 모듈. dhd11
+
+////dhd11의 센서 datasheet 1번핀은 vcc, 2번핀은 data, 3번핀은 nc, 4번핀은 gnd이다.
+//sensor 선언. dhd11 타입이고, pin은 4번에 연결되있다.
+var sensor = {
+	
+	sensors: [ {
+		name: "indoor",
+		type: 11,
+		pin: 4
+	}],
+
+
+//센서값 읽어들이기 함수.
+//센서의 SPec을읽어들인다. 
+	read: function() {
+		for (var a in this.sensors) {
+			b = sensorLib.readSpec(this.sensors[a].type, this.sensors[a].pin);
+			console.log(this.sensors[a].name + ": " + b.temperature.toFixed(1) + "C, " + b.humidity.toFixed(1) + "%");
+		//여기서 소켓통신을하자.
+
+			
+
+}
+
+	//2마다 한번씩 센서값을 읽어들인다.
+	setTimeout(function() {	
+		sensor.read();
+		},2000);
+	}
+};
+//2초마다 한번씩 읽어들임.
+
+sensor.read();
+
+console.log(b.temperature.toFixed(1));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended : false }));
+app.use(logger('dev'));
+
+app.get('/led', function(req, res) {
+	res.sendfile('led_web.html', { root : __dirname });
+});
+	
+//아래 getRun에서 인자를 하나 더 받아야한다. 바로 'time' 인자. 왜냐하면, 
+//사용자가 설정한 시간이상으로 사용 하지 못하게, time을 두고 그 시간 이후가되면 서버에서 자동으로 내려야한다.
+//client가 요청 했다가 인터넷이 먹통이되버리면, off 가 안되는 상황이 발생 할 수 있다.
+
+
+
+
+app.get('/water/:onoff/:min', function(req,res){
+
+	var state = req.params.onoff;
+	var min = req.params.min;
+
+	if (state ==1){ //스위치 on
+		led.writeSync(1);
+		
+		res.json({
+		"result":1
+		})
+		//자동 Stop 추가.
+	
+	}
+		
+	
+	else {
+		led.writeSync(0);
+
+		res.json({
+		"result":1
+		})
+	
+	}
+	console.log(state);
+
+
+	
+	
+	});
+
+
+
+
+
+server.listen(8100, function() {
+		console.log('Express server listenling on port ' + server.address().port);
+});
+
+

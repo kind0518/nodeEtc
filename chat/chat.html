@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<title>chat test</title>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+		<!--이 부분은 include 라고 보면된다.-->
+	</head>
+	<body>
+		<b> Send Mesage </b> <p>
+		Message <input type = "text" id="msgbox"/> 
+		<br>
+		<span id="msgs"></span> 
+
+		<script type="text/javascript">
+			var socket = io.connect('http://192.168.10.101:3000');
+			//여기서 커넥션을 하면 서버에 접속하게된다
+			//서버에서는 connection 이벤트가 실행된다. 
+
+			$("#msgbox").keyup(function(event) { //자바스크립트 함수에서 keyup은 키를 눌럿다가 뗄 경우에 발생.
+				if (event.which ==13) { //키코드를 가져온다
+				/*키코드란?
+				키보드들의 숫자. 어떤 키가 눌렸는가. 여기서 13 keycode는 엔터이다.
+				즉, 무언가 키보드가 눌렀다가 떼졌을 때, 엔터를 누른 경우에 실행되는 조건 분기라는 소리다
+				*/
+
+					socket.emit('fromclient', {msg: $('#msgbox').val()}); 
+					//연결되어있는 서버에서 이벤트 fromclient에 , 변수 msgbox에있는 값을 전송.
+					$('#msgbox').val(' ');		
+
+
+				}
+			)}; 
+			
+			socket.on('toclient', function(data){
+			//이벤트 등록
+				console.log(data.msg);
+				//수신한 데이터 출력
+				$('#msgs').append(data.msg+'<BR>');
+
+			});
+		</script>
+		
+
+	</body>
+
+
+</html>
+

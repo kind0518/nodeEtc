@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> CAM </title>
+	</head>
+
+	<body>
+		<h1>CAM page</h1>
+
+		<script type = 'text/javascript'>
+
+			var image = document.createElement('img'); 
+			image.src = '/images' +'?time='+new Date().getTime();
+			
+			setInterval(function () {
+				changeImage();
+			},400); 
+		
+
+			function changeImage(){
+
+				image.src = '/images' +'?time='+new Date().getTime();
+				document.body.appendChild(image);
+				document.write("q");
+				//<body>와 </body> 사이에 image 태그를 끼어넣음. 즉
+				//<body> <img > </img> </body>가 된다.
+			}
+
+
+		</script>
+
+		</body>
+
+</html>

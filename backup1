@@ -1,0 +1,134 @@
+var express = require('express');
+var http = require('http');
+var app = express();
+var server = http.createServer(app);
+var bodyParser = require('body-parser');
+var GPIO = require('onoff').Gpio;
+var led = new GPIO(18, 'out');
+var logger = require('morgan');
+var sensorLib = require("node-dht-sensor");
+//온습도 모듈. dhd11
+
+
+//sensor 선언. dhd11 타입이고, pin은 4번에 연결되있다.
+var sensor = {
+	sensors: [ {
+		name: "indoor",
+		type: 11,
+		pin: 4
+}],
+
+//센서값 읽어들이기 함수.
+//센서의 SPec을읽어들인다. 
+	read: function() {
+		for (var a in this.sensors) {
+			b = sensorLib.readSpec(this.sensors[a].type, this.sensors[a].pin);
+			console.log(this.sensors[a].name + ": " + b.temperature.toFixed(1) + "C, " + b.humidity.toFixed(1) + "%");
+
+			
+
+}
+
+	//2마다 한번씩 센서값을 읽어들인다.
+	setTimeout(function() {	
+		sensor.read();
+		},2000);
+	}
+};
+//2초마다 한번씩 읽어들임.
+
+sensor.read();
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended : false }));
+app.use(logger('dev'));
+
+app.get('/led', function(req, res) {
+	res.sendfile('led_web.html', { root : __dirname });
+});
+	
+//아래 getRun에서 인자를 하나 더 받아야한다. 바로 'time' 인자. 왜냐하면, 
+//사용자가 설정한 시간이상으로 사용 하지 못하게, time을 두고 그 시간 이후가되면 서버에서 자동으로 내려야한다.
+//client가 요청 했다가 인터넷이 먹통이되버리면, off 가 안되는 상황이 발생 할 수 있다.
+
+var c = this.sensors;
+var d = sensorLib.readSpec(this.sensors[c].type, this.sensors[c].pin);
+console.log(this.sensors[c].name + ": " + d.temperature.toFixed(1) + "C, " + d.humidity.toFixed(1) + "%"
+
+
+
+app.get('/getRun/:numval', function(req,res){
+
+	var state = req.params.numval;
+	var killtime = req.params.time;
+
+	if (state ==1){ //스위치 on
+		led.writeSync(1);
+		
+		res.json({
+		"result":1
+		})
+		//자동 Stop 추가.
+		if(killtime>0){
+		
+			var testTIme=setTimeout(function() {	
+				//함수작성. 
+				led.writeSync(0); //전원종료
+				clearTimeout(testTIme); //호출취소 .이게 계속 실행되면 안되기 때문에 한번실행 후 죽인다.
+ 				},killtime);
+			}	
+		else console.log("killtime :"+killtime); //예외처리.
+		
+		}
+		
+		
+	
+	else {
+		led.writeSync(0);
+
+		res.json({
+		"result":0
+		})
+	
+	}
+	console.log(state);
+
+
+	
+	
+	});
+
+	sensorTemp=b.temperature.toFixed(1) + "C ";
+	console.log(sensorTemp);
+
+//센서값 요청.
+app.get('/getSensor', function(req,res){
+	
+	var sensorTemp; //온도
+	var sensorHum; //습도
+
+	sensorTemp=b.temperature.toFixed(1) + "C ";
+ 	sensorHum= b.humidity.toFixed(1) + "%";
+	//센서에 저장되어있는  온도,습도를 저장.
+
+	//해당 값들을 안드로이드에게 넘김.
+
+	res.json{(
+	
+	"Temp" : sensorTemp
+	"Hum" : sensorHum
+	)};
+
+
+	console.log(sensorTemp);
+	console.log(sensorHum);
+
+});
+
+
+server.listen(8100, function() {
+		console.log('Express server listenling on port ' + server.address().port);
+});
+
+
